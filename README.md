@@ -11,6 +11,9 @@ Laby is a maze editor, generator &amp; solver written in Java. It can solve maze
 - option for choosing cells randomly
 - option to draw arrows from predecessors
 
+# Instructions
+There are two versions available; the full version with GUI, and one without GUI implemented so that you can use it for your own applications. There is also one precompiled jar.
+
 # Credits
 - Algorithms implementation: Chris Samarinas
 - UI design: Chris Darisaplis
