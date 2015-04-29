@@ -107,6 +107,7 @@ public final class MazeSolverID extends MazeSearch{
                     maze[i][j].isVisited = false;
                     // code for GUI - make i, j MazeBox not visited
                     maze[i][j].previous = null;
+                    maze[i][j].isAdded = false;
                 }
             }
             addFront(start_x, start_y);
@@ -139,6 +140,10 @@ public final class MazeSolverID extends MazeSearch{
     @Override
     protected void addFront(int x, int y){
         if(validPosition(x, y)){
+            if(maze[y][x].isAdded){
+                return;
+            }
+            maze[y][x].isAdded = true;
             if(depths[this.y][this.x]<depth){
                 if(x!=start_x||y!=start_y){
                     maze[y][x].previous = maze[this.y][this.x];

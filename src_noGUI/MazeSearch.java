@@ -122,7 +122,7 @@ public abstract class MazeSearch {
      * @return true if MazeBox can be visited in x, y position
      */
     protected boolean validPosition(int x, int y){
-        return x>=0 && x<width && y>=0 && y<height && !maze[y][x].isVisited && !maze[y][x].isObstacle;
+        return x>=0 && x<width && y>=0 && y<height && !maze[y][x].isObstacle;
     }
     
     /**

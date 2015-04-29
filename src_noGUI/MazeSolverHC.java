@@ -134,6 +134,10 @@ public final class MazeSolverHC extends MazeSearch{
     @Override
     protected void addFront(int x, int y){
         if(validPosition(x, y)){
+            if(maze[y][x].isAdded){
+                return;
+            }
+            maze[y][x].isAdded = true;
             if(step>0){
                 maze[y][x].previous = maze[this.y][this.x];
             }

@@ -5,6 +5,7 @@
 public class MazeBox implements Comparable<MazeBox>{
     public boolean isObstacle;
     public boolean isVisited;
+    public boolean isAdded;
     public MazeBox previous;
     public int x;
     public int y;
@@ -13,6 +14,7 @@ public class MazeBox implements Comparable<MazeBox>{
     MazeBox(){
         isObstacle = true;
         isVisited = false;
+        isAdded = false;
         previous = null;
     }
 
