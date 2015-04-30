@@ -22,4 +22,4 @@ There are two versions available; the full version with GUI, and one without GUI
 - Algorithms implementation: Chris Samarinas
 - UI design: Chris Darisaplis
 
-Department of Informatics, Aristotle University of Thessaloniki
+Aristotle University of Thessaloniki, Department of Informatics
