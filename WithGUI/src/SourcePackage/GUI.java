@@ -92,6 +92,7 @@ public class GUI {
     private boolean pause;//thread paused
     private MazeGenerator generator;//generates maze
     private boolean helpOpen;//open help window
+    private boolean generatorMode;//to check whether to reset on File menu click
     
     /**
      * Constructor, builds GUI
@@ -102,6 +103,7 @@ public class GUI {
         solver = null;
         pause = false;
         helpOpen = false;
+        generatorMode = false;
         
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -417,6 +419,7 @@ public class GUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (algoSelection.getSelectedItem().toString().equals("Maze Generator")){
+                    generatorMode = true;
                     random.setEnabled(false);
                     algoSelection.setEnabled(false);
                     IDSpinner.setEnabled(false);
@@ -460,6 +463,7 @@ public class GUI {
                     runThread.start();
                 }
                 else if (canSolve()){
+                    generatorMode = false;
                     mazePanel.setEditable(false);
                     pause = false;
                     random.setEnabled(false);
@@ -742,7 +746,9 @@ public class GUI {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                stopButton.doClick();
+                if(!generatorMode){
+                    stopButton.doClick();
+                }
             }
 
             @Override
