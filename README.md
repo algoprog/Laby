@@ -18,7 +18,7 @@ There are two versions available; the full version with GUI, and one without GUI
 
 About editing
 
-> Left click to add obstacles and right click to remove them from the maze. You can drag the start and goal cells to any position. You can save your maze as a plain text file from the File menu.
+> Left click to add obstacles and right click to remove them from the maze. You can drag and drop the start and goal cells to any position. You can save your maze as a plain text file from the File menu.
 
 # Credits
 - Algorithms implementation: Chris Samarinas
