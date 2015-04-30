@@ -229,7 +229,7 @@ public class GUI {
                         + "GUI: Chris Darisaplis<br>"
                         + "Algorithms implementation: Chris Samarinas<br><br>"
                         + "Department of Informatics<br>"
-                        + "School of Applied Sciences<br>"
+                        + "Faculty of Sciences<br>"
                         + "Aristotle University of Thessaloniki</html>");
                 aboutLabel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
                 aboutPanel.add(aboutLabel);
