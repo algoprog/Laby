@@ -31,13 +31,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.dnd.DragSource;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
@@ -93,11 +90,6 @@ public class MazePanel extends JPanel{
                                         isObstacle()){
                                     aMaze.getMazeLogic()[selection.x][selection.y].
                                         isObstacle = true;
-                                }
-                                else if (aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle()){
-                                    aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle = false;
                                 }
                                 else if (aMaze.getStart() != null && aMaze.getStart().
                                         equals(selection)){

@@ -228,9 +228,9 @@ public class GUI {
                 JLabel aboutLabel = new JLabel("<html> version 1.1 <br><br>"
                         + "GUI: Chris Darisaplis<br>"
                         + "Algorithms implementation: Chris Samarinas<br><br>"
-                        + "Department of Informatics<br>"
+                        + "Aristotle University of Thessaloniki<br>"
                         + "Faculty of Sciences<br>"
-                        + "Aristotle University of Thessaloniki</html>");
+                        + "Department of Informatics</html>");
                 aboutLabel.setAlignmentX(JComponent.LEFT_ALIGNMENT);
                 aboutPanel.add(aboutLabel);
                 
