@@ -670,8 +670,7 @@ public class GUI {
         editPanel.add(startLabel);
         editPanel.add(goalLabel);
         editPanel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-        editPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK),
-                "Set Start & Goal"));
+        editPanel.setBorder(BorderFactory.createTitledBorder("Set Start & Goal"));
         
         startLabel.setToolTipText("Start");
         startLabel.setText("S");
@@ -899,10 +898,10 @@ public class GUI {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int maxSize;
         if (screenSize.height > screenSize.width){
-            maxSize = screenSize.height/10;
+            maxSize = screenSize.height/8;
         }
         else{
-            maxSize = screenSize.width/10;
+            maxSize = screenSize.width/8;
         }
         JDialog newDialog = new JDialog(mainFrame, "Build New Maze", true);
         JPanel newPanel = new JPanel();
