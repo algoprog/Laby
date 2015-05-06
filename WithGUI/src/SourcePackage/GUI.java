@@ -920,8 +920,8 @@ public class GUI {
         JPanel newPanel = new JPanel();
         newPanel.setLayout(new GridLayout(0, 2, 10, 10));
         
-        JSpinner rowSpinner = new JSpinner(new SpinnerNumberModel(16, 4, maxSize, 1));
-        JSpinner columnSpinner = new JSpinner(new SpinnerNumberModel(16, 4, maxSize, 1));
+        JSpinner rowSpinner = new JSpinner(new SpinnerNumberModel(16, 2, maxSize, 1));
+        JSpinner columnSpinner = new JSpinner(new SpinnerNumberModel(16, 2, maxSize, 1));
        
         newPanel.add(new JLabel("Rows: "));
         newPanel.add(rowSpinner);
