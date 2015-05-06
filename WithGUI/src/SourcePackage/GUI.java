@@ -289,7 +289,7 @@ public class GUI {
         JLabel algoLabel = new JLabel("Algorithm");
         algoLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
         String[] algorithms = {"DFS", "BFS", "ID", "Best-First", "Hill Climbing",
-            "A*", "Maze Generator"};
+            "A*", "Maze Generator (DFS)"};
         JComboBox<String> algoSelection = new JComboBox<>(algorithms);
         algoSelection.setAlignmentX(Component.CENTER_ALIGNMENT);
         algoSelection.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
@@ -365,6 +365,17 @@ public class GUI {
             }
         });
         
+        JCheckBox gridBox = new JCheckBox("Grid");
+        gridBox.setSelected(true);
+        gridBox.setAlignmentX(JCheckBox.CENTER_ALIGNMENT);
+        gridBox.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mazePanel.setDrawGrid(gridBox.isSelected());
+            }
+        });
+        
         JLabel completedLabel = new JLabel("Completed!");
         completedLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
         completedLabel.setVisible(false);
@@ -406,7 +417,7 @@ public class GUI {
                 stopButton.setEnabled(false);
                 pause = false;
                 clearMaze();
-                if (algoSelection.getSelectedItem().equals("Maze Generator")){
+                if (algoSelection.getSelectedItem().equals("Maze Generator (DFS)")){
                     mazePanel.getMaze().whiten();
                 }
                 infoPanel.setVisible(false);
@@ -418,7 +429,7 @@ public class GUI {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (algoSelection.getSelectedItem().toString().equals("Maze Generator")){
+                if (algoSelection.getSelectedItem().toString().equals("Maze Generator (DFS)")){
                     generatorMode = true;
                     random.setEnabled(false);
                     algoSelection.setEnabled(false);
@@ -538,7 +549,7 @@ public class GUI {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (algoSelection.getSelectedItem().toString().equals("Maze Generator")){
+                if (algoSelection.getSelectedItem().toString().equals("Maze Generator (DFS)")){
                     if (!pause){
                         stopButton.setEnabled(true);
                         mazePanel.blacken();
@@ -636,7 +647,7 @@ public class GUI {
                     randomPanel.setVisible(true);
                     distanceSelectionPanel.setVisible(false);
                 }
-                if (algoSelection.getSelectedItem().toString().equals("Maze Generator")){
+                if (algoSelection.getSelectedItem().toString().equals("Maze Generator (DFS)")){
                     random.setText("Classic maze");
                     arrowBox.setVisible(false);
                     random.setSelected(false);
@@ -730,6 +741,8 @@ public class GUI {
         runPanel.add(speedPanel);
         runPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         runPanel.add(speedSlider);
+        runPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        runPanel.add(gridBox);
         runPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         runPanel.add(arrowBox);
         runPanel.add(Box.createRigidArea(new Dimension(0, 10)));
