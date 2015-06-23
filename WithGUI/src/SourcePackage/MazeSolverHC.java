@@ -80,7 +80,7 @@ public final class MazeSolverHC extends MazeSearch{
             if(hc){
                 distance = manhattanDistance(x,y-1);
             }else{
-                distance = euclideanDistance(x+1,y);
+                distance = euclideanDistance(x,y-1);
             }
             if(distance<minDistance && validPosition(x,y-1)){
                 minDistance = distance;
@@ -90,7 +90,7 @@ public final class MazeSolverHC extends MazeSearch{
             if(hc){
                 distance = manhattanDistance(x,y+1);
             }else{
-                distance = euclideanDistance(x+1,y);
+                distance = euclideanDistance(x,y+1);
             }
             if(distance<minDistance && validPosition(x,y+1)){
                 minDistance = distance;
@@ -100,7 +100,7 @@ public final class MazeSolverHC extends MazeSearch{
             if(hc){
                distance = manhattanDistance(x-1,y); 
             }else{
-                distance = euclideanDistance(x+1,y);
+                distance = euclideanDistance(x-1,y);
             }
             if(distance<minDistance && validPosition(x-1,y)){
                 next_x = x-1;
