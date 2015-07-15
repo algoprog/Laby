@@ -27,12 +27,18 @@ package SourcePackage;
 
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DragSource;
+import java.awt.dnd.DragSourceAdapter;
+import java.awt.dnd.DragSourceDragEvent;
+import java.awt.dnd.DragSourceDropEvent;
+import java.awt.dnd.DragSourceMotionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -41,6 +47,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import javax.swing.BorderFactory;
@@ -104,6 +111,7 @@ public class GUI {
         pause = false;
         helpOpen = false;
         generatorMode = false;
+
         
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -122,6 +130,35 @@ public class GUI {
         JPanel mainPanel = new JPanel(new GridLayout(0, 1));
         mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         mainPanel.add(mazePanel);
+        
+        DragSource ds = DragSource.getDefaultDragSource();
+            
+            DragSourceMotionListener dsml = new DragSourceMotionListener() {
+
+                @Override
+                public void dragMouseMoved(DragSourceDragEvent dsde) {
+                    DataFlavor flavor = dsde.getDragSourceContext().getTransferable().getTransferDataFlavors()[0];
+                    String data = null;
+                    try {
+                        data = dsde.getDragSourceContext().getTransferable().getTransferData(flavor).toString();
+                    } catch (UnsupportedFlavorException ex) {
+                        System.out.println("DnD Unsupported Flavor");
+                    } catch (IOException ex) {
+                        System.out.println("DnD IOException");
+                    }
+                    mazePanel.setDnDPreview(data);
+                    
+                }
+            };
+        ds.addDragSourceMotionListener(dsml);
+        ds.addDragSourceListener(new DragSourceAdapter() {
+            @Override
+            public void dragDropEnd(DragSourceDropEvent dsde) {
+                mazePanel.endPreview();
+            }
+        });
+
+            
         
         
         JMenuBar menuBar = new JMenuBar();
@@ -697,6 +734,7 @@ public class GUI {
                 handler.exportAsDrag(c, e, TransferHandler.COPY);
             }
             
+            
         });
            
         goalLabel.setToolTipText("Goal");
@@ -920,8 +958,8 @@ public class GUI {
         JPanel newPanel = new JPanel();
         newPanel.setLayout(new GridLayout(0, 2, 10, 10));
         
-        JSpinner rowSpinner = new JSpinner(new SpinnerNumberModel(16, 2, maxSize, 1));
-        JSpinner columnSpinner = new JSpinner(new SpinnerNumberModel(16, 2, maxSize, 1));
+        JSpinner rowSpinner = new JSpinner(new SpinnerNumberModel(16, 4, maxSize, 1));
+        JSpinner columnSpinner = new JSpinner(new SpinnerNumberModel(16, 4, maxSize, 1));
        
         newPanel.add(new JLabel("Rows: "));
         newPanel.add(rowSpinner);

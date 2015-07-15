@@ -31,10 +31,11 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.dnd.DragSource;
+import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
@@ -53,6 +54,9 @@ public class MazePanel extends JPanel{
         private boolean drawArrows;//arrows on solution
         private boolean editable;//can be edited
         private boolean drawgrid;//draw maze grid
+        private String text;//used in drag n drop operations
+        private boolean previewGoal;
+        private boolean previewStart;
         
         /**
          * Default constructor
@@ -68,82 +72,12 @@ public class MazePanel extends JPanel{
             editable = true;
             drawgrid = true;
             this.aMaze = aMaze;
-            mouseSelector = new MouseAdapter() {
-                @Override
-                public void mouseMoved(MouseEvent e) {
-                    calculatePosition(e);
-
-                }
-                
-                @Override
-                public void mouseDragged(MouseEvent e){
-                    calculatePosition(e);
-                }
-                
-            };
-            mousePainter = new MouseInputAdapter() {
-                
-                @Override
-                public void mouseClicked(MouseEvent e){
-                    if (selection != null && editable){
-                            if (SwingUtilities.isLeftMouseButton(e)){
-                                if (!selection.equals(aMaze.getStart()) && !selection.equals(aMaze.getGoal())
-                                        && !aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle()){
-                                    aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle = true;
-                                }
-                                else if (aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle()){
-                                    aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle = false;
-                                }
-                                else if (aMaze.getStart() != null && aMaze.getStart().
-                                        equals(selection)){
-                                    aMaze.setStart(null);
-                                }
-                                else if (aMaze.getGoal() != null && aMaze.getGoal().
-                                        equals(selection)){
-                                    aMaze.setGoal(null);
-                                }
-                            }
-                            else if (SwingUtilities.isRightMouseButton(e)){
-                                aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle = false;
-                            }
-                    }
-                    repaint();
-                }
-                @Override
-                public void mouseDragged(MouseEvent e){
-                    if (selection!= null && editable){
-                        if (SwingUtilities.isLeftMouseButton(e)){
-                           if (!selection.equals(aMaze.getStart()) && !selection.equals(aMaze.getGoal())){
-                                    aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle = true;
-                                }
-                            }
-                            else if (SwingUtilities.isRightMouseButton(e)){
-                                aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle = false;
-                                        if (aMaze.getStart() != null && aMaze.getStart().equals(selection)){
-                                            aMaze.setStart(null);
-                                        }
-                                        if (aMaze.getGoal() != null && aMaze.getGoal().equals(selection)){
-                                            aMaze.setGoal(null);
-                                        }
-                            }
-                        repaint();
-                    }
-                }
-                
-                
-                
-            };
+            setMouseSelector();
+            setMousePainter();
             addMouseMotionListener(mouseSelector);
             addMouseListener(mousePainter);
             addMouseMotionListener(mousePainter);
-            DragSource ds = new DragSource();
+            
             
         }
         
@@ -209,10 +143,6 @@ public class MazePanel extends JPanel{
                 }
             }
             needsRedraw = false;
-            
-            if (selection != null){
-                
-            }
             
             
             for (int i = 0;i< aMaze.getRows();i++){
@@ -319,6 +249,21 @@ public class MazePanel extends JPanel{
                         [aMaze.getGoal().y].getCell());
             }
             
+            
+            if (previewStart && selection != null && !selection.equals(aMaze.getGoal())){
+                Color previewYellow = new Color(Color.YELLOW.getRed(),
+                    Color.YELLOW.getGreen(), Color.YELLOW.getBlue(), 100);
+                g2D.setColor(previewYellow);
+                g2D.fill(aMaze.getMazeLogic()[selection.x][selection.y].getCell());
+            }
+            
+            if (previewGoal && selection != null && !selection.equals(aMaze.getStart())){
+                Color previewBlue = new Color(Color.BLUE.getRed(), Color.BLUE.getGreen(),
+                        Color.BLUE.getBlue(), 100);
+                g2D.setColor(previewBlue);
+                g2D.fill(aMaze.getMazeLogic()[selection.x][selection.y].getCell());
+            }
+            
             g2D.setColor(Color.BLACK);
             if (drawgrid){
                 for (int i = 0;i< aMaze.getRows();i++){
@@ -354,73 +299,8 @@ public class MazePanel extends JPanel{
             removeMouseMotionListener(mousePainter);
             removeMouseListener(mousePainter);
             this.aMaze = aMaze;
-            mouseSelector = new MouseAdapter() {
-                @Override
-                public void mouseMoved(MouseEvent e) {
-                    calculatePosition(e);
-
-                }
-                @Override
-                public void mouseDragged(MouseEvent e){
-                    
-                    calculatePosition(e);
-                }
-            };
-            mousePainter = new MouseInputAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e){
-                    if (selection != null && editable){
-                            if (SwingUtilities.isLeftMouseButton(e)){
-                                if (!selection.equals(aMaze.getStart()) && !selection.equals(aMaze.getGoal())
-                                        && !aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle()){
-                                    aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle = true;
-                                }
-                                else if (aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle()){
-                                    aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle = false;
-                                }
-                                else if (aMaze.getStart() != null && aMaze.getStart().
-                                        equals(selection)){
-                                    aMaze.setStart(null);
-                                }
-                                else if (aMaze.getGoal() != null && aMaze.getGoal().
-                                        equals(selection)){
-                                    aMaze.setGoal(null);
-                                }
-                            }
-                            else if (SwingUtilities.isRightMouseButton(e)){
-                                aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle = false;
-                            }
-                    }
-                    repaint();
-                }
-                @Override
-                public void mouseDragged(MouseEvent e){
-                    if (selection!= null && editable){
-                        if (SwingUtilities.isLeftMouseButton(e)){
-                           if (!selection.equals(aMaze.getStart()) && !selection.equals(aMaze.getGoal())){
-                                    aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle = true;
-                                }
-                            }
-                            else if (SwingUtilities.isRightMouseButton(e)){
-                                aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle = false;
-                                        if (aMaze.getStart() != null && aMaze.getStart().equals(selection)){
-                                            aMaze.setStart(null);
-                                        }
-                                        if (aMaze.getGoal() != null && aMaze.getGoal().equals(selection)){
-                                            aMaze.setGoal(null);
-                                        }
-                            }
-                        repaint();
-                    }
-                }
-            };
+            setMouseSelector();
+            setMousePainter();
             addMouseMotionListener(mouseSelector);
             addMouseListener(mousePainter);
             addMouseMotionListener(mousePainter);
@@ -471,10 +351,13 @@ public class MazePanel extends JPanel{
             aMaze.blacken();
         }
         
+       
+        
         private void calculatePosition(MouseEvent e){
                     int width, height;
                     width = getWidth();
                     height = getHeight();
+                    
             
                     int cellWidth, cellHeight;
                     cellWidth = width/aMaze.getColumns();
@@ -512,11 +395,10 @@ public class MazePanel extends JPanel{
         }
         
         /**
-         * Sets start&goal with drag n drop
-         * 
-         * @param selection string reperesenting user selection (start or goal)
+         * Calculates on which maze cell the pointer hovers on, used on DnD operations
+         * @return point indicating maze cell
          */
-        public void setText(String selection){
+        private Point calculatePointerSelection(){
             Point pointer = this.getMousePosition();
             Point pointerSelection = new Point();
             int width, height;
@@ -538,7 +420,7 @@ public class MazePanel extends JPanel{
             xOff = (width - aMaze.getColumns()*cellWidth)/2;
             yOff = (height - aMaze.getRows()*cellHeight)/2;
                     
-            if (pointer.x>= xOff && pointer.x<= width - xOff &&
+            if (pointer != null && pointer.x>= xOff && pointer.x<= width - xOff &&
                 pointer.y>= yOff && pointer.y<= height - yOff){
                 pointerSelection.x = (pointer.y - yOff)/cellHeight;
                 pointerSelection.y = (pointer.x - xOff)/cellWidth;;
@@ -546,21 +428,60 @@ public class MazePanel extends JPanel{
             else{
                 pointerSelection = null;
             }
+            return pointerSelection;
+        }
+        
+        /**
+         * 
+         * @param selection 
+         */
+        public void setDnDPreview(String selection){
+            if (editable){
+                this.selection = calculatePointerSelection();
+                if (selection.equals("S")){
+                    this.previewGoal = false;
+                    this.previewStart = true;
+                }
+                else if (selection.equals("G")){
+                    this.previewGoal = true;
+                    this.previewStart = false;
+                }
+                repaint();
+            }
+        }
+        
+        
+        
+        /**
+         * Sets start&goal with drag n drop
+         * 
+         * @param selection string reperesenting user selection (start or goal)
+         */
+        public void setText(String selection){
+            Point pointerSelection = calculatePointerSelection();
             
             if (pointerSelection != null && editable){
                 if (selection.equals("S") && (aMaze.getGoal() == null || 
-                        pointerSelection.x != aMaze.getGoal().x)){
+                        !pointerSelection.equals(aMaze.getGoal()))){
                     aMaze.setStart(pointerSelection);
                     aMaze.getMazeLogic()[pointerSelection.x][pointerSelection.y].
                             isObstacle(false);
                 }
-                else if (aMaze.getStart() == null || pointerSelection.x != aMaze.getStart().x &&
-                        pointerSelection.y != aMaze.getStart().y){
+                else if (aMaze.getStart() == null || !pointerSelection.equals(aMaze.getStart())){
                     aMaze.setGoal(pointerSelection);
                     aMaze.getMazeLogic()[pointerSelection.x][pointerSelection.y].
                             isObstacle(false);
                 }
             }
+            else if (editable){
+                if (selection.equals("S")){
+                    aMaze.setStart(null);
+                }
+                else if (selection.equals("G")){
+                    aMaze.setGoal(null);
+                }
+            }
+            
             repaint();
             
             
@@ -571,12 +492,113 @@ public class MazePanel extends JPanel{
          * @return 
          */
         public String getText(){
-            return null;
+            return this.text;
         }
         
         public void setDrawGrid(boolean drawGrid){
             this.drawgrid = drawGrid;
             repaint();
         }
+        
+        /**
+         * Sets up the mouse selector that selects individual maze cells
+         */
+        private void setMouseSelector(){
+            this.mouseSelector = new MouseAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    calculatePosition(e);
+
+                }
+                
+                @Override
+                public void mouseDragged(MouseEvent e){
+                    calculatePosition(e);
+                }
+                
+            };
+        }
+        
+        /**
+         * Sets up the mousePainter that modifies individual maze cells
+         */
+        private void setMousePainter(){
+            mousePainter = new MouseInputAdapter() {
+                
+                @Override
+                public void mouseClicked(MouseEvent e){
+                    if (selection != null && editable){
+                            if (SwingUtilities.isLeftMouseButton(e)){
+                                if (!selection.equals(aMaze.getStart()) && !selection.equals(aMaze.getGoal())
+                                        && !aMaze.getMazeLogic()[selection.x][selection.y].
+                                        isObstacle()){
+                                    aMaze.getMazeLogic()[selection.x][selection.y].
+                                        isObstacle = true;
+                                }
+                                else if (aMaze.getMazeLogic()[selection.x][selection.y].
+                                        isObstacle()){
+                                    aMaze.getMazeLogic()[selection.x][selection.y].
+                                        isObstacle = false;
+                                }
+                                else if (aMaze.getStart() != null && aMaze.getStart().
+                                        equals(selection)){
+                                    aMaze.setStart(null);
+                                }
+                                else if (aMaze.getGoal() != null && aMaze.getGoal().
+                                        equals(selection)){
+                                    aMaze.setGoal(null);
+                                }
+                            }
+                            else if (SwingUtilities.isRightMouseButton(e)){
+                                aMaze.getMazeLogic()[selection.x][selection.y].
+                                        isObstacle = false;
+                            }
+                    }
+                    repaint();
+                }
+                @Override
+                public void mouseDragged(MouseEvent e){
+                    if (selection!= null && editable){
+                        if (SwingUtilities.isLeftMouseButton(e)){
+                           if (!selection.equals(aMaze.getStart()) && !selection.equals(aMaze.getGoal())){
+                                    aMaze.getMazeLogic()[selection.x][selection.y].
+                                        isObstacle = true;
+                                }
+                           else if (selection.equals(aMaze.getStart())){
+                               text = "S";
+                               JComponent c = (JComponent)e.getSource();
+                               TransferHandler handler = c.getTransferHandler();
+                                handler.setDragImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource(
+                                 "/Icons/start.png")));
+                                handler.exportAsDrag(c, e, TransferHandler.COPY);
+                            }
+                           else if (selection.equals(aMaze.getGoal())){
+                               text = "G";
+                               JComponent c = (JComponent)e.getSource();
+                               TransferHandler handler = c.getTransferHandler();
+                                handler.setDragImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource(
+                                 "/Icons/goal.png")));
+                                handler.exportAsDrag(c, e, TransferHandler.COPY);
+                           }
+                        }
+                        else if (SwingUtilities.isRightMouseButton(e)){
+                                aMaze.getMazeLogic()[selection.x][selection.y].
+                                        isObstacle = false;
+                        }
+                        repaint();
+                    }
+                }
+                
+                
+                
+            };
+        }
+
+        public void endPreview(){
+            this.previewGoal = false;
+            this.previewStart = false;
+        }
+        
+        
         
     }
