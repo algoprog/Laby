@@ -33,7 +33,8 @@ import java.awt.Rectangle;
  * @author Chris Samarinas
  */
 public class MazeBox implements Comparable<MazeBox>{
-    public boolean isObstacle;
+    
+    private boolean obstacle;
     public boolean isVisited;
     private boolean solution;
     public MazeBox previous;
@@ -46,7 +47,7 @@ public class MazeBox implements Comparable<MazeBox>{
     
     MazeBox(){
         isAdded = false;
-        isObstacle = false;
+        obstacle = false;
         isVisited = false;
         previous = null;
     }
@@ -60,12 +61,12 @@ public class MazeBox implements Comparable<MazeBox>{
     
     
 
-    public void isObstacle(boolean b) {
-        this.isObstacle = b;
+    public void setIsObstacle(boolean b) {
+        this.obstacle = b;
     }
 
     public boolean isObstacle() {
-        return isObstacle;
+        return obstacle;
     }
 
     public void putCell(Rectangle cell) {

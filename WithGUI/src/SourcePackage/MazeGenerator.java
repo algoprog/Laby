@@ -149,7 +149,7 @@ public final class MazeGenerator {
         out1:
         for(int i=height-1;i>=height-3;i--){
             for(int j=0;j<=2;j++){
-                if(!maze[i][j].isObstacle){
+                if(!maze[i][j].isObstacle()){
                     start_x = j;
                     start_y = i;
                     break out1;
@@ -159,7 +159,7 @@ public final class MazeGenerator {
         out2:
         for(int i=0;i<3;i++){
             for(int j=width-1;j>=width-3;j--){
-                if(!maze[i][j].isObstacle){
+                if(!maze[i][j].isObstacle()){
                     end_x = j;
                     end_y = i;
                     break out2;
@@ -183,16 +183,16 @@ public final class MazeGenerator {
             int wx, wy;
             wx = (maze[y][x].previous.x+x)/2; // wall x
             wy = (maze[y][x].previous.y+y)/2; // wall y
-            maze[wy][wx].isObstacle = false;
+            maze[wy][wx].setIsObstacle(false);
             // Code for GUI - make wx, wy white
-            aMaze.getMazeLogic()[wy][wx].isObstacle(false);
+            aMaze.getMazeLogic()[wy][wx].setIsObstacle(false);
         }
         this.x = x;
         this.y = y;
         maze[y][x].isVisited = true;
-        maze[y][x].isObstacle = false;
+        maze[y][x].setIsObstacle(false);
         step++;
-        aMaze.getMazeLogic()[y][x].isObstacle(false);
+        aMaze.getMazeLogic()[y][x].setIsObstacle(false);
         return true;
     }
     
@@ -248,7 +248,7 @@ public final class MazeGenerator {
         int out[][] = new int[height][width];
         for(int i=0;i<height;i++){
             for(int j=0;j<width;j++){
-                if(maze[i][j].isObstacle) out[i][j] = 3;
+                if(maze[i][j].isObstacle()) out[i][j] = 3;
                 else if(j==start_x && i==start_y) out[i][j] = 1;
                 else if(j==end_x && i==end_y) out[i][j] = 2;
                 else out[i][j] = 0;

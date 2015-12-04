@@ -37,7 +37,7 @@ import java.util.Scanner;
 /**Maze logic
  *
  * @author Christos Darisaplis
- * @version 1.1
+ * @version 1.2
  */
 public class Maze {
     
@@ -111,18 +111,18 @@ public class Maze {
                     if (scanner.hasNextInt()){
                         input = scanner.nextInt();
                         if (input == 0){
-                            mazeLogic[i][j].isObstacle(false);
+                            mazeLogic[i][j].setIsObstacle(false);
                         }
                         else if (input == 1){
-                            mazeLogic[i][j].isObstacle(false);
+                            mazeLogic[i][j].setIsObstacle(false);
                             start = new Point(i, j);
                         }
                         else if (input == 2){
-                            mazeLogic[i][j].isObstacle(false);
+                            mazeLogic[i][j].setIsObstacle(false);
                             goal = new Point(i, j);
                         }
                         else{
-                            mazeLogic[i][j].isObstacle(true);
+                            mazeLogic[i][j].setIsObstacle(true);
                         }
                                     
                         
@@ -189,7 +189,7 @@ public class Maze {
      * @param obstacle obstacle or not 
      */
     public void isObstacle(int x, int y, boolean obstacle){
-        mazeLogic[x][y].isObstacle(obstacle);
+        mazeLogic[x][y].setIsObstacle(obstacle);
     }
     
     /**
@@ -277,7 +277,7 @@ public class Maze {
     public void blacken(){
         for (int i = 0;i< rows;i++){
             for (int j = 0;j< columns;j++){
-                mazeLogic[i][j].isObstacle(true);
+                mazeLogic[i][j].setIsObstacle(true);
             }
         }
         start = null;
@@ -290,7 +290,7 @@ public class Maze {
     public void whiten(){
         for (int i = 0;i< rows;i++){
             for (int j = 0;j<columns;j++){
-                mazeLogic[i][j].isObstacle(false);
+                mazeLogic[i][j].setIsObstacle(false);
             }
         }
         start = null;
@@ -318,6 +318,99 @@ public class Maze {
 
     public void setCurrent(Point current) {
         this.current = current;
+    }
+    
+    public void copyMazeObstacles(Maze otherMaze, int iStart, int jStart){
+        for (int i = 0;i< rows;i++){
+            for (int j = 0;j< columns;j++){
+                if (i + iStart>= otherMaze.getRows() || j + jStart>= otherMaze.getColumns() ||
+                        i + iStart<0 || j + jStart< 0){
+                    mazeLogic[i][j].setIsObstacle(false);
+                }
+                else{
+                    mazeLogic[i][j].setIsObstacle(otherMaze.getMazeLogic()[i + iStart]
+                        [j + jStart].isObstacle());
+                }
+            }
+        }
+        if (otherMaze.getStart() != null && start == null){
+            start = new Point(otherMaze.getStart().x, otherMaze.getStart().y);
+            
+        }
+        else if (otherMaze.getStart() == null){
+            start = null;
+        }
+        if (otherMaze.getGoal() != null && goal == null){
+            goal = new Point(otherMaze.getGoal().x, otherMaze.getGoal().y);
+        }
+        else if (otherMaze.getGoal() == null){
+            goal = null;
+        }
+    }
+    
+    
+    public void addRow(Maze oldMaze){
+        rows++;
+        mazeLogic = new MazeBox[rows][columns];
+        for (int i = 0;i< rows;i++){
+            for (int j = 0;j< columns;j++){
+                mazeLogic[i][j] = new MazeBox();
+            }
+        }
+        copyMazeObstacles(oldMaze, 0, 0);
+    }
+    
+    public void addColumn(Maze oldMaze){
+        columns++;
+        mazeLogic = new MazeBox[rows][columns];
+        for (int i = 0;i< rows;i++){
+            for (int j = 0;j< columns;j++){
+                mazeLogic[i][j] = new MazeBox();
+            }
+        }
+        copyMazeObstacles(oldMaze, 0, 0);
+    }
+    
+    public void removeRow(){
+        Maze temp = new Maze(rows, columns);
+        temp.copyMazeObstacles(this, 0, 0);
+        rows--;
+        mazeLogic = new MazeBox[rows][columns];
+        for (int i = 0;i< rows;i++){
+            for (int j = 0;j< columns;j++){
+                mazeLogic[i][j] = new MazeBox();
+            }
+        }
+        if (start!= null && start.x>= rows){
+            temp.setStart(null);
+            setStart(null);
+        }
+        if (goal != null && goal.x>= rows){
+            temp.setGoal(null);
+            setGoal(null);
+        }
+        copyMazeObstacles(temp, 0, 0);
+    }
+    
+    public void removeColumn(){
+        Maze temp = new Maze(rows, columns);
+        temp.copyMazeObstacles(this, 0, 0);
+        columns--;
+        mazeLogic = new MazeBox[rows][columns];
+        for (int i = 0;i< rows;i++){
+            for (int j = 0;j< columns;j++){
+                mazeLogic[i][j] = new MazeBox();
+            }
+        }
+        if (goal != null && goal.y>= columns){
+            temp.setGoal(null);
+            setGoal(null);
+        }
+        if (start != null && start.y>= columns){
+            temp.setStart(null);
+            setStart(null);
+        }
+        copyMazeObstacles(temp, 0, 0);
     }
 
 }

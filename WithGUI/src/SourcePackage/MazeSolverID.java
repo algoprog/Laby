@@ -89,11 +89,10 @@ public final class MazeSolverID extends MazeSearch{
             visit(box.x, box.y);
             
             ArrayList<Integer> directions = new ArrayList<>();
-            directions.add(3); // left
-            directions.add(2); // bottom
             directions.add(0); // right
             directions.add(1); // top
-            
+            directions.add(2); // bottom
+            directions.add(3); // left
             if(randomStep){
                 Collections.shuffle(directions);
             }

@@ -66,7 +66,7 @@ public abstract class MazeSearch {
         for(int i=0;i<height;i++){
             for(int j=0;j<width;j++){
                 maze[i][j] = new MazeBox();
-                maze[i][j].isObstacle = mazeInput[i][j]==3;
+                maze[i][j].setIsObstacle(mazeInput[i][j]==3);
                 maze[i][j].x = j;
                 maze[i][j].y = i;
                 if(mazeInput[i][j]==1){
@@ -132,7 +132,7 @@ public abstract class MazeSearch {
      * @return true if MazeBox can be visited in x, y position
      */
     protected boolean validPosition(int x, int y){
-        return x>=0 && x<width && y>=0 && y<height && !maze[y][x].isObstacle;
+        return x>=0 && x<width && y>=0 && y<height && !maze[y][x].isObstacle();
     }
     
     /**

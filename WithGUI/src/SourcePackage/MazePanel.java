@@ -26,6 +26,7 @@ package SourcePackage;
 
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -34,7 +35,6 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Iterator;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -43,7 +43,7 @@ import javax.swing.event.MouseInputAdapter;
 
 /**Displays a maze as a colored grid
  * @author Christos Darisaplis
- * @version 1.1
+ * @version 1.2
  */
 public class MazePanel extends JPanel{
         private Point selection;//mouse selection
@@ -55,12 +55,17 @@ public class MazePanel extends JPanel{
         private boolean editable;//can be edited
         private boolean drawgrid;//draw maze grid
         private String text;//used in drag n drop operations
-        private boolean previewGoal;
-        private boolean previewStart;
+        private boolean previewGoal;//previews drop point of goal (DnD operations)
+        private boolean previewStart;//previews drop point of start (DnD operations)
+        private boolean moveable;//can be moved around with cursor
+        private Point movementStartingPoint;//from which point movement occured
+        private Maze originalMaze;//old linked maze
+        private Point originalMazeStart;//where the old maze is placed in relation to the current one
+
         
         /**
          * Default constructor
-            * @param aMaze
+            * @param aMaze maze linked to the panel
          */
         public MazePanel (Maze aMaze){
             super();
@@ -71,7 +76,10 @@ public class MazePanel extends JPanel{
             drawArrows = false;
             editable = true;
             drawgrid = true;
+            moveable = false;
             this.aMaze = aMaze;
+            this.originalMaze = aMaze;
+            this.originalMazeStart = new Point(0, 0);
             setMouseSelector();
             setMousePainter();
             addMouseMotionListener(mouseSelector);
@@ -107,11 +115,11 @@ public class MazePanel extends JPanel{
          */
         @Override
         protected void paintComponent(Graphics g){
-            super.paintComponent(g);
+            super.paintComponent(g);//initialize
             Graphics2D g2D;
             g2D = (Graphics2D)g.create();
             
-            int width, height;
+            int width, height;//calculate width and height along with offsets
             width = getWidth();
             height = getHeight();
             
@@ -130,9 +138,18 @@ public class MazePanel extends JPanel{
             xOff = (width - aMaze.getColumns()*cellWidth)/2;
             yOff = (height - aMaze.getRows()*cellHeight)/2;
             
+            if (xOff == 0){
+                width -=1;
+                cellWidth = width/aMaze.getColumns();
+            }
+            if (yOff == 0){
+                height-=1;
+                cellHeight = height/aMaze.getRows();
+            }
+            
 
             
-            if (needsRedraw){
+            if (needsRedraw){//replace cells if needed
                 for (int i = 0;i< aMaze.getRows();i++){
                     for (int j = 0;j< aMaze.getColumns();j++){
                         Rectangle cell;
@@ -145,9 +162,9 @@ public class MazePanel extends JPanel{
             needsRedraw = false;
             
             
-            for (int i = 0;i< aMaze.getRows();i++){
+            for (int i = 0;i< aMaze.getRows();i++){//draw
                 for (int j = 0;j< aMaze.getColumns();j++){
-                    if (drawgrid){
+                    if (drawgrid){//draw grid
                         g2D.setColor(Color.BLACK);
                     }
                     else{
@@ -155,15 +172,15 @@ public class MazePanel extends JPanel{
                     }
                     g2D.draw(aMaze.getMazeLogic()[i][j].getCell());
                     if (aMaze.getMazeLogic()[i][j].isObstacle()){
-                        g2D.setColor(Color.BLACK);
+                        g2D.setColor(Color.BLACK);//draw obstacle
                         g2D.fill(aMaze.getMazeLogic()[i][j].getCell());
                     }
                     if (aMaze.getMazeLogic()[i][j].isIsFront()){
-                        g2D.setColor(Color.CYAN);
+                        g2D.setColor(Color.CYAN);//draw front
                         g2D.fill(aMaze.getMazeLogic()[i][j].getCell());
                     }
                     if (aMaze.getMazeLogic()[i][j].isVisited()){
-                        g2D.setColor(Color.RED);
+                        g2D.setColor(Color.RED);//draw visited
                         g2D.fill(aMaze.getMazeLogic()[i][j].getCell());
                     }
                     
@@ -173,18 +190,25 @@ public class MazePanel extends JPanel{
             
             
             
-            g2D.setColor(Color.GREEN);
+            g2D.setColor(Color.GREEN);//draw solution so far
             MazeBox previous = null;
             MazeBox aSolutionBox = null;
             if (aMaze.getSolution() != null){
-                Iterator<MazeBox> it = aMaze.getSolution().iterator();
-                while (it.hasNext()){
+                int currentSize = aMaze.getSolution().size();
+                for (int i = 0;i< currentSize;i++){
                     previous = aSolutionBox;
-                    aSolutionBox = it.next();
-                     g2D.fill(aMaze.getMazeLogic()[aSolutionBox.y]
+                    try {//catch concurrent modifications
+                        previous = aSolutionBox;
+                        aSolutionBox = aMaze.getSolution().get(i);
+                    } catch (IndexOutOfBoundsException e) {
+                        break;
+                    }
+                    if (aSolutionBox != null){
+                        g2D.fill(aMaze.getMazeLogic()[aSolutionBox.y]
                             [aSolutionBox.x].getCell());
-                     if (previous != null && drawArrows){
-                         g2D.setColor(Color.BLACK);
+                    }
+                     if (previous != null && aSolutionBox != null && drawArrows){
+                         g2D.setColor(Color.BLACK);//draw arrors
                          Rectangle cell = aMaze.getMazeLogic()[previous.y][previous.x].getCell();
                          if (previous.x > aSolutionBox.x){
                              g2D.fillPolygon(new int[]{cell.x,
@@ -231,20 +255,24 @@ public class MazePanel extends JPanel{
                 }
             }
             
-            if (aMaze.getCurrent() != null){
+            if (aMaze.getCurrent() != null){//draw current cell
                 g2D.setColor(Color.MAGENTA);
                 g2D.fill(aMaze.getMazeLogic()[aMaze.getCurrent().x]
                         [aMaze.getCurrent().y].getCell());
             }
             
             
-            if (aMaze.getStart() != null){
-                g2D.setColor(Color.YELLOW);
+            if (aMaze.getStart() != null && aMaze.getStart().x>= 0 &&
+                    aMaze.getStart().y>= 0 && aMaze.getStart().x< aMaze.getRows() &&
+                    aMaze.getStart().y< aMaze.getColumns()){
+                g2D.setColor(Color.YELLOW);//draw start
                 g2D.fill(aMaze.getMazeLogic()[aMaze.getStart().x]
                         [aMaze.getStart().y].getCell());
             }
-            if (aMaze.getGoal() != null){
-                g2D.setColor(Color.BLUE);
+            if (aMaze.getGoal() != null && aMaze.getGoal().x>= 0 &&
+                    aMaze.getGoal().y>=0 && aMaze.getGoal().x<aMaze.getRows() && 
+                    aMaze.getGoal().y< aMaze.getColumns()){
+                g2D.setColor(Color.BLUE);//draw goal
                 g2D.fill(aMaze.getMazeLogic()[aMaze.getGoal().x]
                         [aMaze.getGoal().y].getCell());
             }
@@ -253,26 +281,26 @@ public class MazePanel extends JPanel{
             if (previewStart && selection != null && !selection.equals(aMaze.getGoal())){
                 Color previewYellow = new Color(Color.YELLOW.getRed(),
                     Color.YELLOW.getGreen(), Color.YELLOW.getBlue(), 100);
-                g2D.setColor(previewYellow);
+                g2D.setColor(previewYellow);//draw preview of DnD (start)
                 g2D.fill(aMaze.getMazeLogic()[selection.x][selection.y].getCell());
             }
             
             if (previewGoal && selection != null && !selection.equals(aMaze.getStart())){
                 Color previewBlue = new Color(Color.BLUE.getRed(), Color.BLUE.getGreen(),
                         Color.BLUE.getBlue(), 100);
-                g2D.setColor(previewBlue);
+                g2D.setColor(previewBlue);//draw preview of DnD (goal)
                 g2D.fill(aMaze.getMazeLogic()[selection.x][selection.y].getCell());
             }
             
             g2D.setColor(Color.BLACK);
-            if (drawgrid){
+            if (drawgrid){//draw grid
                 for (int i = 0;i< aMaze.getRows();i++){
                     for (int j = 0;j< aMaze.getColumns();j++){
                          g2D.draw(aMaze.getMazeLogic()[i][j].getCell());
                     }
                 }
             }
-            else{
+            else{//draw outline
                 Rectangle upperLeftCell = aMaze.getMazeLogic()[0][0].getCell();
                 Rectangle upperRightCell = aMaze.getMazeLogic()[0][aMaze.getColumns() - 1].getCell();
                 Rectangle bottomLeftCell = aMaze.getMazeLogic()[aMaze.getRows() - 1][0].getCell();
@@ -330,6 +358,10 @@ public class MazePanel extends JPanel{
             return mazeData;
         }
         
+        /**
+         * Returns the maze currently linked to this panel
+         * @return maze object
+         */
         public Maze getMaze(){
             return aMaze;
         }
@@ -352,7 +384,10 @@ public class MazePanel extends JPanel{
         }
         
        
-        
+        /**
+         * Calculates mouse selection as maze cell
+         * @param e mouse movement
+         */
         private void calculatePosition(MouseEvent e){
                     int width, height;
                     width = getWidth();
@@ -378,18 +413,32 @@ public class MazePanel extends JPanel{
                             e.getY()>= yOff && e.getY()<= height - yOff){
                         selection = new Point();
                         selection.x = (e.getY() - yOff)/cellHeight;
-                        selection.y = (e.getX() - xOff)/cellWidth;;
+                        selection.y = (e.getX() - xOff)/cellWidth;
+                        if (selection.x>= aMaze.getRows()){
+                            selection.x = aMaze.getRows() - 1;
+                        }
+                        if (selection.y>= aMaze.getColumns()){
+                            selection.y = aMaze.getColumns() - 1;
+                        }
                     }
                     else{
                         selection = null;
                     }
         }
         
-        
+        /**
+         * Settter of drawArrows variable
+         * @param arrows new value
+         */
         public void setDrawArros(boolean arrows){
             this.drawArrows = arrows;
+            repaint();
         }
         
+        /**
+         * Setter of editable variable
+         * @param editable new value
+         */
         public void setEditable(boolean editable){
             this.editable = editable;
         }
@@ -423,8 +472,14 @@ public class MazePanel extends JPanel{
             if (pointer != null && pointer.x>= xOff && pointer.x<= width - xOff &&
                 pointer.y>= yOff && pointer.y<= height - yOff){
                 pointerSelection.x = (pointer.y - yOff)/cellHeight;
-                pointerSelection.y = (pointer.x - xOff)/cellWidth;;
+                pointerSelection.y = (pointer.x - xOff)/cellWidth;
+                if (pointerSelection.x>= aMaze.getRows()){
+                    pointerSelection.x = aMaze.getRows() - 1;
                 }
+                if (pointerSelection.y>= aMaze.getColumns()){
+                    pointerSelection.y = aMaze.getColumns() - 1;
+                }
+            }
             else{
                 pointerSelection = null;
             }
@@ -432,8 +487,8 @@ public class MazePanel extends JPanel{
         }
         
         /**
-         * 
-         * @param selection 
+         * Enables preview of DnD operations according to data transefered
+         * @param selection start or goal
          */
         public void setDnDPreview(String selection){
             if (editable){
@@ -465,12 +520,12 @@ public class MazePanel extends JPanel{
                         !pointerSelection.equals(aMaze.getGoal()))){
                     aMaze.setStart(pointerSelection);
                     aMaze.getMazeLogic()[pointerSelection.x][pointerSelection.y].
-                            isObstacle(false);
+                            setIsObstacle(false);
                 }
                 else if (aMaze.getStart() == null || !pointerSelection.equals(aMaze.getStart())){
                     aMaze.setGoal(pointerSelection);
                     aMaze.getMazeLogic()[pointerSelection.x][pointerSelection.y].
-                            isObstacle(false);
+                            setIsObstacle(false);
                 }
             }
             else if (editable){
@@ -495,6 +550,10 @@ public class MazePanel extends JPanel{
             return this.text;
         }
         
+        /**
+         * Setter of drawGrid variable
+         * @param drawGrid new value
+         */
         public void setDrawGrid(boolean drawGrid){
             this.drawgrid = drawGrid;
             repaint();
@@ -525,6 +584,12 @@ public class MazePanel extends JPanel{
         private void setMousePainter(){
             mousePainter = new MouseInputAdapter() {
                 
+                
+                @Override
+                public void mousePressed(MouseEvent e){
+                    movementStartingPoint = selection;
+                }
+                
                 @Override
                 public void mouseClicked(MouseEvent e){
                     if (selection != null && editable){
@@ -533,12 +598,12 @@ public class MazePanel extends JPanel{
                                         && !aMaze.getMazeLogic()[selection.x][selection.y].
                                         isObstacle()){
                                     aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle = true;
+                                        setIsObstacle(true);
                                 }
                                 else if (aMaze.getMazeLogic()[selection.x][selection.y].
                                         isObstacle()){
                                     aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle = false;
+                                            setIsObstacle(false);
                                 }
                                 else if (aMaze.getStart() != null && aMaze.getStart().
                                         equals(selection)){
@@ -551,18 +616,19 @@ public class MazePanel extends JPanel{
                             }
                             else if (SwingUtilities.isRightMouseButton(e)){
                                 aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle = false;
+                                        setIsObstacle(false);
                             }
                     }
                     repaint();
                 }
+                
                 @Override
                 public void mouseDragged(MouseEvent e){
                     if (selection!= null && editable){
                         if (SwingUtilities.isLeftMouseButton(e)){
                            if (!selection.equals(aMaze.getStart()) && !selection.equals(aMaze.getGoal())){
                                     aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle = true;
+                                            setIsObstacle(true);
                                 }
                            else if (selection.equals(aMaze.getStart())){
                                text = "S";
@@ -583,9 +649,39 @@ public class MazePanel extends JPanel{
                         }
                         else if (SwingUtilities.isRightMouseButton(e)){
                                 aMaze.getMazeLogic()[selection.x][selection.y].
-                                        isObstacle = false;
+                                        setIsObstacle(false);
                         }
-                        repaint();
+                    }
+                    if (moveable && movementStartingPoint != null &&
+                        selection != null &&
+                        !movementStartingPoint.equals(selection)){
+                        int i = movementStartingPoint.x - selection.x;
+                        int j = movementStartingPoint.y - selection.y;
+                        originalMazeStart.x += i;
+                        originalMazeStart.y += j;
+                        if (aMaze.getStart() != null){
+                            aMaze.getStart().x -= i;
+                            aMaze.getStart().y -= j;
+                        }
+                        if (aMaze.getGoal() != null){
+                            aMaze.getGoal().x -= i;
+                            aMaze.getGoal().y -= j;
+                        }
+                        aMaze.copyMazeObstacles(originalMaze, originalMazeStart.x,
+                                originalMazeStart.y);
+                        movementStartingPoint = selection;
+                    }
+                    invalidate();
+                    repaint();
+                }
+                
+                @Override
+                public void mouseMoved(MouseEvent e){
+                    if (moveable && selection != null){
+                        setCursor(new Cursor(Cursor.MOVE_CURSOR));
+                    }
+                    else if (moveable){
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                     }
                 }
                 
@@ -594,11 +690,45 @@ public class MazePanel extends JPanel{
             };
         }
 
+        /**
+         * Ends any and all previews of DnD operations
+         */
         public void endPreview(){
             this.previewGoal = false;
             this.previewStart = false;
         }
         
+        /**
+         * Setter of moveable variable
+         * @param moveable new value
+         */
+        public void setMoveable(boolean moveable){
+            this.moveable = moveable;
+        }
+       
+        /**
+         * Getter of originalMaze variable
+         * @return originalMaze variable
+         */
+        public Maze getOriginalMaze() {
+            return originalMaze;
+        }
+        
+        /**
+         * Setter of originalMaze variable
+         * @param newOriginalMaze new value
+         */
+        public void setOriginalMaze(Maze newOriginalMaze){
+            this.originalMaze = newOriginalMaze;
+        }
+        
+        /**
+         * Getter of drawGrid variable
+         * @return drawGrid variable
+         */
+        public boolean getDrawGrid(){
+            return this.drawgrid;
+        }
         
         
     }
